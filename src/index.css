@@ -1,0 +1,13 @@
+/* Estilos globales */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(90deg, rgba(253,254,253,1) 0%, rgb(193, 223, 172) 50%, rgba(253,254,253,1) 100%);
+  min-height: 100vh;
+  overflow-x: hidden; 
+}
+
+/* Ajustes generales de la aplicación */
+.App {
+  text-align: center;
+}
