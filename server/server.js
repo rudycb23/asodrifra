@@ -32,15 +32,6 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 
-const corsOptions = {
-  origin: [
-    "http://localhost:3000", // Para desarrollo local
-    "https://www.asodisfra.com", // Reemplaza con tu dominio de producción
-  ],
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
-
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -48,7 +39,6 @@ app.use(
   "/assets/imagenes",
   express.static(path.join(__dirname, "publico/assets/imagenes"))
 );
-app.use(cors(corsOptions));
 
 // Clave secreta de reCAPTCHA
 const RECAPTCHA_SECRET_KEY = "6LevGIgqAAAAAJO_C200LhK6pEN4Kw4cXms_4Hc9";

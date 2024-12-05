@@ -1,13 +1,22 @@
 /* Estilos globales */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
 body {
+  height: 100%;
   margin: 0;
   font-family: Arial, sans-serif;
-  background: linear-gradient(90deg, rgba(253,254,253,1) 0%, rgb(193, 223, 172) 50%, rgba(253,254,253,1) 100%);
+  background: linear-gradient(90deg, rgba(253, 254, 253, 1) 0%, rgb(193, 223, 172) 50%, rgba(253, 254, 253, 1) 100%);
   min-height: 100vh;
-  overflow-x: hidden; 
+  overflow-x: hidden;
+  font-family: 'Roboto', sans-serif;
+  line-height: 1.6;
+  color: #333;
 }
 
 /* Ajustes generales de la aplicación */
 .App {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
