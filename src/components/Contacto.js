@@ -6,10 +6,17 @@ import {
   FaEnvelope,
   FaFacebookMessenger,
 } from "react-icons/fa";
+import { motion } from "framer-motion";
+
+const variantesSeccion = {
+  oculto: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0 },
+};
 
 function Contacto() {
   return (
     <div
+      className="contacto-bg"
       style={{
         backgroundImage: `url(${process.env.PUBLIC_URL}/assets/iglesia1.jpg)`,
         backgroundSize: "cover",
@@ -29,67 +36,75 @@ function Contacto() {
           maxWidth: "800px",
         }}
       >
-        <Row>
-          <Col className="text-center mt-3">
-            <h2>Contáctanos</h2>
-            <p>
-              Si tienes alguna duda o necesitas más información, no dudes en
-              contactarnos a través de nuestros medios oficiales. También puedes
-              visitarnos en nuestras redes sociales para mantenerte actualizado
-              sobre los eventos y actividades de la comunidad.
-            </p>
-          </Col>
-        </Row>
-        <Row className="text-center my-4">
-          <Col xs={6} sm={6} md={3} className="mb-4">
-            <a
-              href="https://www.facebook.com/ASODISFRA"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <FaFacebook size={50} color="#4267B2" />
-            </a>
-            <p className="mt-2">
-              <strong>Facebook</strong>
-            </p>
-          </Col>
-          <Col xs={6} sm={6} md={3} className="mb-4">
-            <a
-              href="https://wa.me/50687616802"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <FaWhatsapp size={50} color="#25D366" />
-            </a>
-            <p className="mt-2">
-              <strong>WhatsApp</strong>
-            </p>
-          </Col>
-          <Col xs={6} sm={6} md={3} className="mb-4">
-            <a
-              href="mailto:asodisfra@outlook.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <FaEnvelope size={50} color="#EA4335" />
-            </a>
-            <p className="mt-2">
-              <strong>Correo Electrónico</strong>
-            </p>
-          </Col>
-          <Col xs={6} sm={6} md={3} className="mb-4">
-            <a
-              href="https://www.facebook.com/messages/t/752218898287963"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <FaFacebookMessenger size={50} color="#006AFF" />
-            </a>
-            <p className="mt-2">
-              <strong>Messenger</strong>
-            </p>
-          </Col>
-        </Row>
+        <motion.div
+          variants={variantesSeccion}
+          initial="oculto"
+          whileInView="visible"
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <Row>
+            <Col className="text-center mt-3">
+              <h2 className=" fw-bold">Contáctanos</h2>
+              <p>
+                Si tienes alguna duda o necesitas más información, no dudes en
+                contactarnos a través de nuestros medios oficiales. También
+                puedes visitarnos en nuestras redes sociales para mantenerte
+                actualizado sobre los eventos y actividades de la comunidad.
+              </p>
+            </Col>
+          </Row>
+          <Row className="text-center my-4">
+            <Col xs={6} sm={6} md={3} className="mb-4">
+              <a
+                href="https://www.facebook.com/ASODISFRA"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FaFacebook size={50} color="#4267B2" />
+              </a>
+              <p className="mt-2">
+                <strong>Facebook</strong>
+              </p>
+            </Col>
+            <Col xs={6} sm={6} md={3} className="mb-4">
+              <a
+                href="https://wa.me/50687616802"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FaWhatsapp size={50} color="#25D366" />
+              </a>
+              <p className="mt-2">
+                <strong>WhatsApp</strong>
+              </p>
+            </Col>
+            <Col xs={6} sm={6} md={3} className="mb-4">
+              <a
+                href="mailto:asodisfra@outlook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FaEnvelope size={50} color="#EA4335" />
+              </a>
+              <p className="mt-2">
+                <strong>Correo Electrónico</strong>
+              </p>
+            </Col>
+            <Col xs={6} sm={6} md={3} className="mb-4">
+              <a
+                href="https://www.facebook.com/messages/t/752218898287963"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FaFacebookMessenger size={50} color="#006AFF" />
+              </a>
+              <p className="mt-2">
+                <strong>Messenger</strong>
+              </p>
+            </Col>
+          </Row>
+        </motion.div>
       </Container>
     </div>
   );

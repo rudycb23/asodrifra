@@ -3,6 +3,12 @@ import { Container, Row, Col, Form, Button, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import Swal from "sweetalert2";
+import { motion } from "framer-motion";
+
+const variantesSeccion = {
+  oculto: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0 },
+};
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -52,43 +58,53 @@ const Login = () => {
   };
 
   return (
-    <Container className="d-flex align-items-center justify-content-center mt-5 pt-5">
-      <Row className="w-100 justify-content-center">
-        <Col md={8} lg={6}>
-          <div className="bg-white p-5 rounded shadow-lg">
-            <h2 className="text-center text-success mb-4">Iniciar Sesión</h2>
-            {error && <Alert variant="danger">{error}</Alert>}
-            <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="email" className="mb-4">
-                <Form.Label>Correo Electrónico</Form.Label>
-                <Form.Control
-                  type="email"
-                  placeholder="Ingrese su correo"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="password" className="mb-4">
-                <Form.Label>Contraseña</Form.Label>
-                <Form.Control
-                  type="password"
-                  placeholder="Ingrese su contraseña"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Button variant="success" type="submit" className="w-100 py-2">
+    <motion.div
+      variants={variantesSeccion}
+      initial="oculto"
+      whileInView="visible"
+      viewport={{ once: true }}
+      transition={{ duration: 0.8 }}
+    >
+      <Container className="d-flex align-items-center justify-content-center mt-5 pt-5">
+        <Row className="w-100 justify-content-center">
+          <Col md={8} lg={6}>
+            <div className="bg-white p-5 rounded shadow-lg">
+              <h2 className="text-center text-success mb-4 fw-bolder">
                 Iniciar Sesión
-              </Button>
-            </Form>
-          </div>
-        </Col>
-      </Row>
-    </Container>
+              </h2>
+              {error && <Alert variant="danger">{error}</Alert>}
+              <Form onSubmit={handleSubmit}>
+                <Form.Group controlId="email" className="mb-4">
+                  <Form.Label>Correo Electrónico</Form.Label>
+                  <Form.Control
+                    type="email"
+                    placeholder="Ingrese su correo"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+                <Form.Group controlId="password" className="mb-4">
+                  <Form.Label>Contraseña</Form.Label>
+                  <Form.Control
+                    type="password"
+                    placeholder="Ingrese su contraseña"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+                <Button variant="success" type="submit" className="w-100 py-2">
+                  Iniciar Sesión
+                </Button>
+              </Form>
+            </div>
+          </Col>
+        </Row>
+      </Container>
+    </motion.div>
   );
 };
 

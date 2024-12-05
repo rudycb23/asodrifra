@@ -89,36 +89,36 @@ function NavbarComponent() {
           onClick={handleToggle}
         />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ms-auto">
+          <Nav className="ms-auto text-start fs-5">
             <Nav.Link as={Link} to="/" onClick={handleClose}>
-              <FaHome className="mb-1 me-1" />
+              <FaHome className="mb-1 mx-2" />
               Inicio
             </Nav.Link>
             <Nav.Link as={Link} to="/salon-comunal" onClick={handleClose}>
-            <FaLandmark className="mb-1 me-1" />
+            <FaLandmark className="mb-1 mx-2" />
               Salón Comunal
             </Nav.Link>
             <Nav.Link as={Link} to="/noticias-eventos" onClick={handleClose}>
-              <FaNewspaper className="mb-1 me-1" />
+              <FaNewspaper className="mb-1 mx-2" />
               Noticias y Eventos
             </Nav.Link>
             <Nav.Link as={Link} to="/contacto" onClick={handleClose}>
-              <FaEnvelope className="mb-1 me-1" />
+              <FaEnvelope className="mb-1 mx-2" />
               Contacto
             </Nav.Link>
             <Nav.Link as={Link} to="/comentarios" onClick={handleClose}>
-              <FaComments className="mb-1 me-1" />
+              <FaComments className="mb-1 mx-2" />
               Comentarios
             </Nav.Link>
 
             {isAdminAuthenticated && (
               <>
                 <Nav.Link as={Link} to="/admin-panel" onClick={handleClose}>
-                  <FaTools className="mb-1 me-1" />
+                  <FaTools className="mb-1 mx-2" />
                   Gestionar
                 </Nav.Link>
                 <Nav.Link onClick={handleLogout}>
-                  <FaUserLock className="mb-1 me-1" />
+                  <FaUserLock className="mb-1 mx-2" />
                   Cerrar Sesión
                 </Nav.Link>
               </>

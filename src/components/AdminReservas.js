@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Container, Table, Button, Modal } from "react-bootstrap";
+import { Container, Table, Button, Modal, Row, Col, Form } from "react-bootstrap";
 import Swal from "sweetalert2";
 import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
 import { firestore } from "../firebaseConfig";
+import { motion } from "framer-motion";
+
+const variantesSeccion = {
+  oculto: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0 },
+};
 
 const AdminReservas = () => {
   const [reservas, setReservas] = useState([]);
+  const [reservasFiltradas, setReservasFiltradas] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
   const [selectedReserva, setSelectedReserva] = useState(null);
 
   const fetchReservas = async () => {
@@ -15,10 +23,41 @@ const AdminReservas = () => {
       querySnapshot.forEach((doc) => {
         reservasData.push({ id: doc.id, ...doc.data() });
       });
+
+      // Ordenar reservas: pendientes primero, luego las demás por fecha descendente
+      reservasData.sort((a, b) => {
+        if (a.estado === "Pendiente" && b.estado !== "Pendiente") return -1;
+        if (a.estado !== "Pendiente" && b.estado === "Pendiente") return 1;
+        if (a.estado !== "Pendiente" && b.estado !== "Pendiente") {
+          return new Date(b.fecha) - new Date(a.fecha); // Más recientes primero
+        }
+        return new Date(a.fecha) - new Date(b.fecha); // Dentro de los pendientes, las más cercanas primero
+      });
+
       setReservas(reservasData);
+      setReservasFiltradas(reservasData);
     } catch (error) {
       console.error("Error al cargar reservas:", error);
     }
+  };
+
+  const handleBusqueda = (e) => {
+    const valor = e.target.value.toLowerCase();
+    setBusqueda(valor);
+
+    // Filtrar reservas dinámicamente
+    const filtradas = reservas.filter((reserva) => {
+      const fechaFormateada = new Date(reserva.fecha).toLocaleDateString();
+      return (
+        reserva.nombre.toLowerCase().includes(valor) ||
+        reserva.email.toLowerCase().includes(valor) ||
+        reserva.telefono.toLowerCase().includes(valor) ||
+        reserva.estado.toLowerCase().includes(valor) ||
+        fechaFormateada.includes(valor) // Incluir la fecha formateada en la búsqueda
+      );
+    });
+
+    setReservasFiltradas(filtradas);
   };
 
   const handleAprobar = async (id) => {
@@ -64,94 +103,131 @@ const AdminReservas = () => {
   }, []);
 
   return (
-    <Container className="mt-5">
-      <div className="bg-white p-4 rounded shadow">
-        <h2 className="text-success text-center py-2">Lista de Reservas</h2>
-        <Table className="mt-2" striped bordered hover>
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Correo</th>
-              <th>Teléfono</th>
-              <th>Fecha</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reservas.map((reserva) => (
-              <tr key={reserva.id}>
-                <td>{reserva.nombre}</td>
-                <td>{reserva.email}</td>
-                <td>{reserva.telefono}</td>
-                <td>{reserva.fecha}</td>
-                <td>{reserva.estado}</td>
-                <td>
-                  <Button
-                    variant="info"
-                    className="me-2"
-                    onClick={() => handleViewDetails(reserva)}
-                  >
-                    Ver Detalles
-                  </Button>
-                  <Button
-                    variant="success"
-                    className="me-2"
-                    onClick={() => handleAprobar(reserva.id)}
-                  >
-                    Aprobar
-                  </Button>
-                  <Button
-                    variant="danger"
-                    onClick={() => handleRechazar(reserva.id)}
-                  >
-                    Rechazar
-                  </Button>
-                </td>
+    <motion.div
+      variants={variantesSeccion}
+      initial="oculto"
+      whileInView="visible"
+      viewport={{ once: true }}
+      transition={{ duration: 0.8 }}
+    >
+      <Container className="mt-5">
+        <div className="bg-white p-4 rounded shadow">
+          <h2 className="text-success text-center py-2 fw-bolder">
+            Lista de Reservas
+          </h2>
+          <Form.Control
+            type="text"
+            placeholder="Buscar por nombre, correo, teléfono, estado o fecha..."
+            value={busqueda}
+            onChange={handleBusqueda}
+            className="mb-4"
+          />
+          <Table responsive className="table-striped table-bordered">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th className="text-center">Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
-        <Modal
-          show={!!selectedReserva}
-          onHide={() => setSelectedReserva(null)}
-          centered
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Detalles de la Reserva</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            {selectedReserva && (
-              <>
-                <p>
-                  <strong>Nombre:</strong> {selectedReserva.nombre}
-                </p>
-                <p>
-                  <strong>Correo:</strong> {selectedReserva.email}
-                </p>
-                <p>
-                  <strong>Teléfono:</strong> {selectedReserva.telefono}
-                </p>
-                <p>
-                  <strong>Fecha:</strong> {selectedReserva.fecha}
-                </p>
-                <p>
-                  <strong>Estado:</strong> {selectedReserva.estado}
-                </p>
-              </>
-            )}
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              variant="secondary"
-              onClick={() => setSelectedReserva(null)}
-            >
-              Cerrar
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      </div>
-    </Container>
+            </thead>
+            <tbody>
+              {reservasFiltradas.map((reserva) => (
+                <tr key={reserva.id}>
+                  <td>{reserva.nombre}</td>
+                  <td>{reserva.email}</td>
+                  <td>{reserva.telefono}</td>
+                  <td>{new Date(reserva.fecha).toLocaleDateString()}</td>
+                  <td
+                    className={`fw-bold ${
+                      reserva.estado === "Pendiente"
+                        ? "text-warning"
+                        : reserva.estado === "Aprobada"
+                        ? "text-success"
+                        : "text-danger"
+                    }`}
+                  >
+                    {reserva.estado}
+                  </td>
+                  <td>
+                    <Row className="justify-content-center">
+                      <Col xs={12} sm="auto" className="mb-2 mb-sm-0">
+                        <Button
+                          variant="info"
+                          className="w-100"
+                          onClick={() => handleViewDetails(reserva)}
+                        >
+                          Ver Detalles
+                        </Button>
+                      </Col>
+                      <Col xs={12} sm="auto" className="mb-2 mb-sm-0">
+                        <Button
+                          variant="success"
+                          className="w-100"
+                          onClick={() => handleAprobar(reserva.id)}
+                        >
+                          Aprobar
+                        </Button>
+                      </Col>
+                      <Col xs={12} sm="auto">
+                        <Button
+                          variant="danger"
+                          className="w-100"
+                          onClick={() => handleRechazar(reserva.id)}
+                        >
+                          Rechazar
+                        </Button>
+                      </Col>
+                    </Row>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+          <Modal
+            show={!!selectedReserva}
+            onHide={() => setSelectedReserva(null)}
+            centered
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Detalles de la Reserva</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              {selectedReserva && (
+                <>
+                  <p>
+                    <strong>Nombre:</strong> {selectedReserva.nombre}
+                  </p>
+                  <p>
+                    <strong>Correo:</strong> {selectedReserva.email}
+                  </p>
+                  <p>
+                    <strong>Teléfono:</strong> {selectedReserva.telefono}
+                  </p>
+                  <p>
+                    <strong>Fecha:</strong>{" "}
+                    {new Date(selectedReserva.fecha).toLocaleDateString()}
+                  </p>
+                  <p>
+                    <strong>Estado:</strong> {selectedReserva.estado}
+                  </p>
+                </>
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => setSelectedReserva(null)}
+              >
+                Cerrar
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </div>
+      </Container>
+    </motion.div>
   );
 };
 

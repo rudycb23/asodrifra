@@ -2,6 +2,12 @@ import React from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { FaCalendarAlt, FaNewspaper, FaComments, FaPen } from "react-icons/fa";
+import { motion } from "framer-motion";
+
+const variantesSeccion = {
+  oculto: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0 },
+};
 
 function AdminPanel() {
   return (
@@ -9,22 +15,37 @@ function AdminPanel() {
       <Row className="justify-content-center">
         <Col sm={10}>
           <div className="bg-white shadow p-4 rounded">
-            <h2 className="text-center my-1 section-title text-success">
+            <h2 className="text-center my-1 section-title text-success fw-bolder">
               Panel de Administración
             </h2>
           </div>
 
+          {/* Aquí ajustamos la distribución en pantallas grandes */}
           <Row className="mt-2 g-4">
-            <Col sm={12} md={6}>
+            <motion.div
+              variants={variantesSeccion}
+              initial="oculto"
+              whileInView="visible"
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="col-12 col-md-6 col-lg-6"
+            >
               <Link to="/admin-crear-noticia" className="text-decoration-none">
                 <div className="admin-card bg-white shadow p-5 rounded text-center">
                   <FaPen size={50} className="admin-card-icon" color="green" />
                   <div className="admin-card-title my-auto">Crear Noticia</div>
                 </div>
               </Link>
-            </Col>
+            </motion.div>
 
-            <Col sm={12} md={6}>
+            <motion.div
+              variants={variantesSeccion}
+              initial="oculto"
+              whileInView="visible"
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="col-12 col-md-6 col-lg-6"
+            >
               <Link to="/admin-noticias" className="text-decoration-none">
                 <div className="admin-card bg-white shadow p-5 rounded text-center">
                   <FaNewspaper
@@ -37,9 +58,16 @@ function AdminPanel() {
                   </div>
                 </div>
               </Link>
-            </Col>
+            </motion.div>
 
-            <Col sm={12} md={6}>
+            <motion.div
+              variants={variantesSeccion}
+              initial="oculto"
+              whileInView="visible"
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="col-12 col-md-6 col-lg-6"
+            >
               <Link to="/admin-reservas" className="text-decoration-none">
                 <div className="admin-card bg-white shadow p-5 rounded text-center">
                   <FaCalendarAlt
@@ -52,9 +80,16 @@ function AdminPanel() {
                   </div>
                 </div>
               </Link>
-            </Col>
+            </motion.div>
 
-            <Col sm={12} md={6}>
+            <motion.div
+              variants={variantesSeccion}
+              initial="oculto"
+              whileInView="visible"
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="col-12 col-md-6 col-lg-6"
+            >
               <Link to="/admin-comentarios" className="text-decoration-none">
                 <div className="admin-card bg-white shadow p-5 rounded text-center">
                   <FaComments
@@ -67,7 +102,7 @@ function AdminPanel() {
                   </div>
                 </div>
               </Link>
-            </Col>
+            </motion.div>
           </Row>
         </Col>
       </Row>

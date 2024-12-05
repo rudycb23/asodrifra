@@ -13,6 +13,8 @@ import "react-calendar/dist/Calendar.css";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import ReCAPTCHA from "react-google-recaptcha";
+import { collection, addDoc, getDocs } from "firebase/firestore";
+import { firestore } from "../firebaseConfig";
 import {
   FaCalendarAlt,
   FaUser,
@@ -22,8 +24,14 @@ import {
   FaMoneyBillWave,
   FaUniversity,
 } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 const MySwal = withReactContent(Swal);
+
+const variantesElemento = {
+  oculto: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0 },
+};
 
 const ReservaSalon = () => {
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
@@ -37,6 +45,7 @@ const ReservaSalon = () => {
   const [captchaToken, setCaptchaToken] = useState(null);
 
   const fechaHoy = new Date();
+
   const convertirFecha = (date) => {
     const año = date.getFullYear();
     const mes = String(date.getMonth() + 1).padStart(2, "0");
@@ -77,22 +86,18 @@ const ReservaSalon = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!fechaSeleccionada) {
       setMensajeError("Por favor selecciona una fecha válida antes de enviar.");
       return;
     }
-
     if (!captchaToken) {
       setMensajeError("Por favor completa el CAPTCHA antes de enviar.");
       return;
     }
-
     if (formData.nombre.length < 3 || formData.telefono.length < 8) {
       setMensajeError("Completa todos los campos correctamente.");
       return;
     }
-
     MySwal.fire({
       title: "Confirmar Reserva",
       text: `¿Deseas reservar el salón el día ${fechaSeleccionada}?`,
@@ -105,37 +110,27 @@ const ReservaSalon = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const response = await fetch("http://localhost:4000/api/reservas", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ...formData,
-              fecha: fechaSeleccionada,
-              captchaToken,
-            }),
+          await addDoc(collection(firestore, "reservas"), {
+            ...formData,
+            fecha: fechaSeleccionada,
+            estado: "Pendiente",
+            fechaRegistro: new Date().toISOString(),
           });
-
-          const data = await response.json();
-          if (data.success) {
-            setFechas((prev) => ({
-              ...prev,
-              pendientes: [...prev.pendientes, fechaSeleccionada],
-            }));
-            setFormData({ nombre: "", telefono: "", email: "" });
-            setFechaSeleccionada(null);
-            setCaptchaToken(null);
-            MySwal.fire({
-              title: "Reserva Pendiente",
-              text: "Recuerda confirmar la reserva vía WhatsApp y realizar el depósito a una de nuestras cuentas.",
-              icon: "info",
-              confirmButtonColor: "#28a745",
-            });
-          } else {
-            setMensajeError(data.message || "Error al validar el CAPTCHA.");
-          }
+          setFechas((prev) => ({
+            ...prev,
+            pendientes: [...prev.pendientes, fechaSeleccionada],
+          }));
+          setFormData({ nombre: "", telefono: "", email: "" });
+          setFechaSeleccionada(null);
+          setCaptchaToken(null);
+          MySwal.fire({
+            title: "Reserva Pendiente",
+            text: "Recuerda confirmar la reserva vía WhatsApp y realizar el depósito a una de nuestras cuentas.",
+            icon: "info",
+            confirmButtonColor: "#28a745",
+          });
         } catch (error) {
-          console.error("Error al enviar la reserva:", error);
-          Swal.fire("Error", "No se pudo enviar la reserva.", "error");
+          Swal.fire("Error", "No se pudo guardar la reserva.", "error");
         }
       }
     });
@@ -143,28 +138,19 @@ const ReservaSalon = () => {
 
   const cargarFechas = async () => {
     try {
-      const response = await fetch("http://localhost:4000/api/reservas/fechas");
-      if (!response.ok) {
-        throw new Error(`Error del servidor: ${response.status}`);
-      }
-      const data = await response.json();
-      if (data.success) {
-        const aprobadas = data.fechas
-          .filter((item) => item.estado === "Aprobada")
-          .map((item) => item.fecha);
-        const pendientes = data.fechas
-          .filter((item) => item.estado === "Pendiente")
-          .map((item) => item.fecha);
-
-        setFechas({
-          aprobadas,
-          pendientes,
-        });
-      } else {
-        console.error("Error en la respuesta:", data.message);
-      }
+      const querySnapshot = await getDocs(collection(firestore, "reservas"));
+      const fechasOcupadas = { aprobadas: [], pendientes: [] };
+      querySnapshot.forEach((doc) => {
+        const { fecha, estado } = doc.data();
+        if (estado === "Aprobada") {
+          fechasOcupadas.aprobadas.push(fecha);
+        } else if (estado === "Pendiente") {
+          fechasOcupadas.pendientes.push(fecha);
+        }
+      });
+      setFechas(fechasOcupadas);
     } catch (error) {
-      console.error("Error al cargar fechas:", error);
+      console.error("Error al cargar las fechas:", error);
     }
   };
 
@@ -191,59 +177,104 @@ const ReservaSalon = () => {
   };
 
   const formatShortWeekday = (locale, date) => localeES.days[date.getDay()];
-
   const formatMonthYear = (locale, date) =>
     `${localeES.months[date.getMonth()]} ${date.getFullYear()}`;
 
   return (
     <Container className="reserva-salon mt-5">
       <div className="bg-white p-4 rounded shadow mb-4">
-        <h2 className="text-success text-center">
+        <h2 className="text-success text-center fw-bolder">
           <FaCalendarAlt className="mb-1 me-2" />
           Reserva del Salón Comunal
         </h2>
-        <p className="text-center text-muted">
-          Selecciona una fecha disponible para reservar el salón.
-        </p>
       </div>
 
-      <Row className="align-items-stretch mt-2">
-        {/* Columna para el calendario */}
-        <Col lg={6} className="d-flex flex-column mt-5 mb-4">
-          <div
-            className="calendar-container bg-white p-4 mt-2 mb-5 rounded shadow text-center h-90"
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
+      {/* Animaciones para WhatsApp y Depósitos */}
+      <Row className="d-flex align-items-center justify-content-center">
+        <motion.div
+          className="d-flex flex-lg-row flex-column col-12 bg-white rounded shadow-lg px-1"
+          variants={variantesElemento}
+          initial="oculto"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <div className="flex-grow-1 p-3 text-center border-lg-end">
+            <a
+              href="https://wa.me/50687616802"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-decoration-none"
+            >
+              <FaWhatsapp size={50} color="#25D366" className="mt-4" />
+            </a>
+            <p className="mt-3">
+              <strong>
+                Toca el ícono para confirmar tu reserva vía WhatsApp
+              </strong>
+            </p>
+          </div>
 
-              transform: "scale(1.3)",
-              overflow: "hidden",
-            }}
-          >
-            <div style={{ flexGrow: 1 }}>
-              <Calendar
-                onChange={handleDateChange}
-                tileClassName={({ date }) => {
-                  const fecha = convertirFecha(date);
-                  if (fechas.aprobadas.includes(fecha)) return "reservado";
-                  if (fechas.pendientes.includes(fecha)) return "pendiente";
-                  if (convertirFecha(date) === convertirFecha(fechaHoy))
-                    return "hoy";
+          <div className="flex-grow-1 p-4 text-center">
+            <p className="mb-3">
+              <strong>Depósitos</strong>
+            </p>
 
-                  return null;
-                }}
-                minDate={fechaHoy}
-                formatShortWeekday={formatShortWeekday}
-                formatMonthYear={formatMonthYear}
-              />
+            {/* Sección SINPE Móvil */}
+            <div className="d-flex align-items-center justify-content-center mb-3">
+              <FaMoneyBillWave size={24} color="#28a745" className="me-2" />
+              <p className="mb-0 text-wrap">
+                SINPE Móvil: <strong>87616802</strong>
+              </p>
             </div>
-            <div className="mt-4 ">
-              <Row className="mt-1 text-center">
+
+            {/* Sección Transferencia Bancaria */}
+            <div className="d-flex flex-column align-items-center text-center">
+              <div className="d-flex align-items-center mb-2">
+                <FaUniversity size={24} color="#007bff" className="me-2" />
+                <p className="mb-0 text-wrap">Transferencia Bancaria:</p>
+              </div>
+              <p className="mb-0 text-break">
+                <strong>Cuenta IBAN CR12345678901234567890</strong>
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </Row>
+
+      {/* Calendario, Badges y Formulario */}
+      <Row className="align-items-center my-1">
+        <Col lg={6} className="d-flex flex-column">
+          <motion.div
+            className="calendar-container bg-white p-4 my-2 rounded shadow text-center"
+            variants={variantesElemento}
+            initial="oculto"
+            whileInView="visible"
+            viewport={{ once: true }}
+            transition={{ duration: 1.5 }}
+          >
+            <p className="text-center text-muted">
+              Selecciona una fecha disponible.
+            </p>
+            <Calendar
+              onChange={handleDateChange}
+              tileClassName={({ date }) => {
+                const fecha = convertirFecha(date);
+                if (fecha === convertirFecha(new Date()))
+                  return "bg-success text-white";
+                if (fechas.aprobadas.includes(fecha)) return "reservado";
+                if (fechas.pendientes.includes(fecha)) return "pendiente";
+                return null;
+              }}
+              minDate={fechaHoy}
+              formatShortWeekday={formatShortWeekday}
+              formatMonthYear={formatMonthYear}
+            />
+            <div className="mt-4">
+              <Row className="mt-2 text-center">
                 <Col
                   xs={6}
                   lg={3}
-                  className="d-flex justify-content-center p-1 "
+                  className="d-flex justify-content-center p-1"
                 >
                   <Badge
                     bg="success"
@@ -256,7 +287,7 @@ const ReservaSalon = () => {
                 <Col
                   xs={6}
                   lg={3}
-                  className="d-flex justify-content-cente p-1 "
+                  className="d-flex justify-content-center p-1"
                 >
                   <Badge
                     bg="primary"
@@ -269,7 +300,7 @@ const ReservaSalon = () => {
                 <Col
                   xs={6}
                   lg={3}
-                  className="d-flex justify-content-center p-1 "
+                  className="d-flex justify-content-center p-1"
                 >
                   <Badge
                     bg="warning"
@@ -282,7 +313,7 @@ const ReservaSalon = () => {
                 <Col
                   xs={6}
                   lg={3}
-                  className="d-flex justify-content-center p-1 "
+                  className="d-flex justify-content-center p-1"
                 >
                   <Badge
                     bg="danger"
@@ -294,13 +325,20 @@ const ReservaSalon = () => {
                 </Col>
               </Row>
             </div>
-          </div>
+          </motion.div>
         </Col>
 
         <Col lg={6}>
-          <div className="bg-white p-4 rounded shadow h-100">
+          <motion.div
+            className="bg-white p-4 mt-2 rounded shadow h-100"
+            variants={variantesElemento}
+            initial="oculto"
+            whileInView="visible"
+            viewport={{ once: true }}
+            transition={{ duration: 2 }}
+          >
             {mensajeError && <Alert variant="danger">{mensajeError}</Alert>}
-            <Form onSubmit={handleSubmit} className="h-100 d-flex flex-column">
+            <Form onSubmit={handleSubmit}>
               <Form.Group controlId="fecha">
                 <Form.Label>
                   <strong>
@@ -314,7 +352,6 @@ const ReservaSalon = () => {
                     fechaSeleccionada || "Selecciona una fecha en el calendario"
                   }
                   readOnly
-                  required
                 />
               </Form.Group>
               <Form.Group controlId="nombre" className="mt-3">
@@ -330,7 +367,6 @@ const ReservaSalon = () => {
                   name="nombre"
                   value={formData.nombre}
                   onChange={handleChange}
-                  required
                 />
               </Form.Group>
               <Form.Group controlId="telefono" className="mt-3">
@@ -346,7 +382,6 @@ const ReservaSalon = () => {
                   name="telefono"
                   value={formData.telefono}
                   onChange={handleChange}
-                  required
                 />
               </Form.Group>
               <Form.Group controlId="email" className="mt-3">
@@ -362,7 +397,6 @@ const ReservaSalon = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  required
                 />
               </Form.Group>
               <ReCAPTCHA
@@ -370,58 +404,12 @@ const ReservaSalon = () => {
                 onChange={onCaptchaChange}
                 className="mt-3"
               />
-              <Button
-                variant="success"
-                type="submit"
-                className="mt-4 w-100"
-                style={{ marginTop: "auto" }}
-              >
+              <Button variant="success" type="submit" className="mt-4 w-100">
                 <FaCalendarAlt className="mb-1 me-2" />
                 Solicitar Reserva
               </Button>
             </Form>
-          </div>
-        </Col>
-      </Row>
-
-      <Row className="p-3 justify-content-between">
-        <Col
-          lg={5}
-          className="mx-auto d-flex flex-column align-items-center bg-white my-1 p-4 rounded shadow"
-        >
-          <a
-            href="https://wa.me/50687616802"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-decoration-none"
-          >
-            <FaWhatsapp size={50} color="#25D366" />
-          </a>
-          <p className="mt-2 text-center">
-            <strong>Toca el ícono y confirma tu reserva vía WhatsApp</strong>
-          </p>
-        </Col>
-
-        <Col
-          lg={6}
-          className="d-flex flex-column align-items-center bg-white p-4 my-1 rounded shadow"
-        >
-          <p className="text-center mb-3">
-            <strong>Depósitos</strong>
-          </p>
-          <div className="d-flex align-items-center mb-2">
-            <FaMoneyBillWave size={24} color="#28a745" className="me-2" />
-            <p className="mb-0">
-              SINPE Móvil: <strong>87616802</strong>
-            </p>
-          </div>
-          <div className="d-flex align-items-center">
-            <FaUniversity size={24} color="#007bff" className="me-2" />
-            <p className="mb-0 text-center">
-              Transferencia Bancaria:{" "}
-              <strong>Cuenta IBAN CR12345678901234567890</strong>
-            </p>
-          </div>
+          </motion.div>
         </Col>
       </Row>
     </Container>

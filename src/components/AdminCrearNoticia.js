@@ -23,39 +23,44 @@ const AdminCrearNoticia = () => {
   const manejarEnvio = async (e) => {
     e.preventDefault();
 
-    if (!titulo || !contenido) {
-      Swal.fire("Error", "El título y el contenido son obligatorios.", "error");
+    if (!titulo.trim() || !contenido.trim()) {
+      MySwal.fire(
+        "Error",
+        "El título y el contenido son obligatorios.",
+        "error"
+      );
       return;
     }
 
     try {
-      let rutasImagenes = [];
+      const nuevasImagenes = [];
 
-      if (imagenes.length > 0) {
+      // Subir imágenes al servidor PHP
+      for (const imagen of imagenes) {
         const datosFormulario = new FormData();
-        imagenes.forEach((imagen) =>
-          datosFormulario.append("imagenes", imagen)
-        );
+        datosFormulario.append("imagen", imagen);
 
-        const respuestaSubida = await fetch("http://localhost:4000/subir", {
+        const respuesta = await fetch("https://asodisfra.com/imagenes.php", {
           method: "POST",
           body: datosFormulario,
         });
 
-        if (!respuestaSubida.ok) {
-          throw new Error("Error al subir imágenes");
+        if (!respuesta.ok) {
+          throw new Error("Error al subir imágenes al servidor");
         }
 
-        const datos = await respuestaSubida.json();
-        rutasImagenes = datos.rutasArchivos;
+        const { ruta } = await respuesta.json();
+        nuevasImagenes.push(ruta);
       }
 
+      // Crear nueva noticia en Firestore
       const nuevaNoticia = {
-        titulo,
+        titulo: titulo.trim(),
         contenido: contenido
           .split("\n")
-          .filter((parrafo) => parrafo.trim() !== ""),
-        imagenes: rutasImagenes,
+          .map((p) => p.trim())
+          .filter((p) => p),
+        imagenes: nuevasImagenes,
         fecha: new Date().toISOString(),
       };
 
@@ -69,14 +74,20 @@ const AdminCrearNoticia = () => {
       }).then(() => navigate("/admin-noticias"));
     } catch (error) {
       console.error("Error al crear la noticia:", error);
-      Swal.fire("Error", "No se pudo crear la noticia.", "error");
+      MySwal.fire(
+        "Error",
+        "No se pudo crear la noticia. Por favor, inténtalo más tarde.",
+        "error"
+      );
     }
   };
 
   return (
     <Container className="mt-5">
       <div className="bg-white p-4 rounded shadow">
-        <h2 className="text-center text-success mb-4">Crear Nueva Noticia</h2>
+        <h2 className="text-center text-success mb-4 fw-bolder">
+          Crear Nueva Noticia
+        </h2>
         <Form onSubmit={manejarEnvio}>
           <Form.Group className="mb-3" controlId="titulo">
             <Form.Label>Título</Form.Label>
@@ -92,7 +103,7 @@ const AdminCrearNoticia = () => {
             <Form.Label>Contenido</Form.Label>
             <Form.Control
               as="textarea"
-              rows={16}
+              rows={8}
               placeholder="Escribe el contenido de la noticia. Usa saltos de línea para párrafos."
               value={contenido}
               onChange={(e) => setContenido(e.target.value)}
