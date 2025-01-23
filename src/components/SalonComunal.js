@@ -124,7 +124,7 @@ function SalonComunal() {
         </Row>
       </motion.div>
 
-      {/* Características del Salón */}
+    
       <motion.div
         variants={variantesSeccion}
         initial="oculto"
