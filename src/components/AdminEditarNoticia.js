@@ -47,7 +47,7 @@ const AdminEditarNoticia = () => {
     cargarNoticia();
   }, [id, navigate]);
 
-  // Manejar subida de nuevas imágenes
+  // Manejar subida de nuevas imagenes
   const manejarSubidaImagen = (e) => {
     const archivos = Array.from(e.target.files);
     setGaleria([...galeria, ...archivos]);
@@ -74,7 +74,7 @@ const AdminEditarNoticia = () => {
     try {
       const nuevasImagenes = [];
 
-      // Subir nuevas imágenes al servidor
+      // Subir nuevas imagenes al servidor
       for (const imagen of galeria) {
         if (imagen instanceof File) {
           const datosFormulario = new FormData();
@@ -96,7 +96,7 @@ const AdminEditarNoticia = () => {
         }
       }
 
-      // Actualizar Firestore con los datos y referencias de imágenes
+      // Actualizar Firestore con los datos y referencias de imagenes
       const contenidoArray = contenido
         .split("\n")
         .filter((p) => p.trim() !== "");
