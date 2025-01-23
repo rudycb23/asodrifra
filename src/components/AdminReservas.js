@@ -29,9 +29,9 @@ const AdminReservas = () => {
         if (a.estado === "Pendiente" && b.estado !== "Pendiente") return -1;
         if (a.estado !== "Pendiente" && b.estado === "Pendiente") return 1;
         if (a.estado !== "Pendiente" && b.estado !== "Pendiente") {
-          return new Date(b.fecha) - new Date(a.fecha); // Más recientes primero
+          return new Date(b.fecha) - new Date(a.fecha); 
         }
-        return new Date(a.fecha) - new Date(b.fecha); // Dentro de los pendientes, las más cercanas primero
+        return new Date(a.fecha) - new Date(b.fecha);
       });
 
       setReservas(reservasData);
@@ -53,7 +53,7 @@ const AdminReservas = () => {
         reserva.email.toLowerCase().includes(valor) ||
         reserva.telefono.toLowerCase().includes(valor) ||
         reserva.estado.toLowerCase().includes(valor) ||
-        fechaFormateada.includes(valor) // Incluir la fecha formateada en la búsqueda
+        fechaFormateada.includes(valor) 
       );
     });
 
