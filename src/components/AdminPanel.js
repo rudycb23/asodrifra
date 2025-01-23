@@ -20,7 +20,7 @@ function AdminPanel() {
             </h2>
           </div>
 
-          {/* Aquí ajustamos la distribución en pantallas grandes */}
+          
           <Row className="mt-2 g-4">
             <motion.div
               variants={variantesSeccion}
