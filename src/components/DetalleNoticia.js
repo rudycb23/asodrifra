@@ -12,7 +12,7 @@ const variantesSeccion = {
 };
 
 const DetalleNoticia = () => {
-  const { id } = useParams(); // ID de la noticia
+  const { id } = useParams(); 
   const navigate = useNavigate();
   const [noticia, setNoticia] = useState(null);
   const [error, setError] = useState(null);
@@ -20,7 +20,7 @@ const DetalleNoticia = () => {
   useEffect(() => {
     const cargarNoticia = async () => {
       try {
-        const docRef = doc(firestore, "noticias", id); // Consulta a Firebase
+        const docRef = doc(firestore, "noticias", id); 
         const docSnap = await getDoc(docRef);
 
         if (!docSnap.exists()) {
@@ -28,7 +28,7 @@ const DetalleNoticia = () => {
           return;
         }
 
-        const datos = docSnap.data(); // Datos de Firebase
+        const datos = docSnap.data(); 
         setNoticia(datos);
       } catch (err) {
         console.error("Error al cargar la noticia:", err);
