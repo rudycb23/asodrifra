@@ -15,11 +15,9 @@ import { motion } from "framer-motion";
 function PaginaPrincipal() {
   const navigate = useNavigate();
   const [noticias, setNoticias] = useState([]);
-
-  // Configuración de las animaciones
   const variantesSeccion = {
-    oculto: { opacity: 0, y: 50 }, // Inicio: invisible y desplazado hacia abajo
-    visible: { opacity: 1, y: 0 }, // Aparece suavemente y en su lugar
+    oculto: { opacity: 0, y: 50 }, 
+    visible: { opacity: 1, y: 0 }, 
   };
 
   const cargarNoticias = async () => {
