@@ -189,7 +189,7 @@ const ReservaSalon = () => {
         </h2>
       </div>
 
-      {/* Animaciones para WhatsApp y Depósitos */}
+
       <Row className="d-flex align-items-center justify-content-center">
         <motion.div
           className="d-flex flex-lg-row flex-column col-12 bg-white rounded shadow-lg px-1"
@@ -219,7 +219,7 @@ const ReservaSalon = () => {
               <strong>Depósitos</strong>
             </p>
 
-            {/* Sección SINPE Móvil */}
+    
             <div className="d-flex align-items-center justify-content-center mb-3">
               <FaMoneyBillWave size={24} color="#28a745" className="me-2" />
               <p className="mb-0 text-wrap">
@@ -227,7 +227,7 @@ const ReservaSalon = () => {
               </p>
             </div>
 
-            {/* Sección Transferencia Bancaria */}
+  
             <div className="d-flex flex-column align-items-center text-center">
               <div className="d-flex align-items-center mb-2">
                 <FaUniversity size={24} color="#007bff" className="me-2" />
@@ -241,7 +241,7 @@ const ReservaSalon = () => {
         </motion.div>
       </Row>
 
-      {/* Calendario, Badges y Formulario */}
+
       <Row className="align-items-center my-1">
         <Col lg={6} className="d-flex flex-column">
           <motion.div
